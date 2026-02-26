@@ -1,0 +1,92 @@
+name: Build Android APK
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:   # ← Allows manual trigger from GitHub UI
+
+jobs:
+  build-apk:
+    name: Build Debug APK
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── 1. Checkout your code ─────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Set up Node.js ─────────────────────────────────────────────────
+      - name: Set up Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      # ── 3. Set up Java JDK 17 ─────────────────────────────────────────────
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # ── 4. Set up Android SDK ─────────────────────────────────────────────
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      # ── 5. Install npm dependencies ───────────────────────────────────────
+      - name: Install dependencies
+        run: npm ci
+
+      # ── 6. Initialize Capacitor & add Android platform ───────────────────
+      - name: Initialize Capacitor
+        run: |
+          npx cap init "Pro Cosmetic Chemist AI" com.prochemist.ai --web-dir src
+        continue-on-error: true   # Skip if already initialized
+
+      - name: Add Android platform
+        run: |
+          npx cap add android
+        continue-on-error: true   # Skip if already added
+
+      # ── 7. Sync web assets into Android project ───────────────────────────
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      # ── 8. Make Gradle wrapper executable ────────────────────────────────
+      - name: Make Gradle executable
+        run: chmod +x android/gradlew
+
+      # ── 9. Cache Gradle dependencies (speeds up future builds) ───────────
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: gradle-
+
+      # ── 10. Build Debug APK ───────────────────────────────────────────────
+      - name: Build Debug APK
+        run: |
+          cd android
+          ./gradlew assembleDebug --no-daemon
+
+      # ── 11. Upload APK as downloadable artifact ───────────────────────────
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: pro-cosmetic-chemist-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
+
+      # ── 12. Print APK info ────────────────────────────────────────────────
+      - name: APK Build Info
+        run: |
+          echo "✅ APK built successfully!"
+          ls -lh android/app/build/outputs/apk/debug/
+          echo "📥 Download from the Actions tab → Artifacts section"
