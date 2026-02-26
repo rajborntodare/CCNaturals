@@ -1,0 +1,92 @@
+name: Release Signed APK
+
+on:
+  push:
+    tags:
+      - 'v*'   # Triggers on tags like v1.0.0, v1.1.0, etc.
+
+jobs:
+  release:
+    name: Build & Release Signed APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Initialize Capacitor
+        run: npx cap init "Pro Cosmetic Chemist AI" com.prochemist.ai --web-dir src
+        continue-on-error: true
+
+      - name: Add Android platform
+        run: npx cap add android
+        continue-on-error: true
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Make Gradle executable
+        run: chmod +x android/gradlew
+
+      # ── Decode keystore from GitHub Secret ───────────────────────────────
+      - name: Decode Keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/release.jks
+
+      # ── Build signed release APK ─────────────────────────────────────────
+      - name: Build Release APK
+        run: |
+          cd android
+          ./gradlew assembleRelease \
+            -Pandroid.injected.signing.store.file=release.jks \
+            -Pandroid.injected.signing.store.password="${{ secrets.KEYSTORE_PASSWORD }}" \
+            -Pandroid.injected.signing.key.alias="${{ secrets.KEY_ALIAS }}" \
+            -Pandroid.injected.signing.key.password="${{ secrets.KEY_PASSWORD }}" \
+            --no-daemon
+
+      # ── Rename APK with version tag ───────────────────────────────────────
+      - name: Rename APK
+        run: |
+          mv android/app/build/outputs/apk/release/app-release.apk \
+             android/app/build/outputs/apk/release/pro-chemist-ai-${{ github.ref_name }}.apk
+
+      # ── Create GitHub Release with APK attached ───────────────────────────
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Pro Cosmetic Chemist AI ${{ github.ref_name }}
+          body: |
+            ## 🧪 Pro Cosmetic Chemist AI ${{ github.ref_name }}
+
+            ### Install
+            1. Download `pro-chemist-ai-${{ github.ref_name }}.apk`
+            2. Transfer to Android device
+            3. Enable "Install from unknown sources" if prompted
+            4. Tap the APK to install
+
+            ### What's included
+            - Full AI formulation assistant powered by Claude Sonnet 4
+            - Complete INCI formula generation
+            - Batch process instructions
+            - Formula library with persistent storage
+          files: android/app/build/outputs/apk/release/pro-chemist-ai-${{ github.ref_name }}.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
