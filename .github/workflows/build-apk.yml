@@ -24,7 +24,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
 
       # ── 3. Set up Java JDK 17 ─────────────────────────────────────────────
       - name: Set up JDK 17
@@ -39,7 +38,7 @@ jobs:
 
       # ── 5. Install npm dependencies ───────────────────────────────────────
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       # ── 6. Initialize Capacitor & add Android platform ───────────────────
       - name: Initialize Capacitor
