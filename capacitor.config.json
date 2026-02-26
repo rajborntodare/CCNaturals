@@ -1,0 +1,24 @@
+{
+  "appId": "com.prochemist.ai",
+  "appName": "Pro Chemist AI",
+  "webDir": "src",
+  "server": {
+    "androidScheme": "https",
+    "cleartext": false
+  },
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false,
+    "backgroundColor": "#070d0a",
+    "loggingBehavior": "none"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1500,
+      "backgroundColor": "#070d0a",
+      "showSpinner": false,
+      "androidScaleType": "CENTER_CROP"
+    }
+  }
+}
