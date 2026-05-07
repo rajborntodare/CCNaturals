@@ -1,6 +1,6 @@
 {
-  "appId": "com.prochemist.ai",
-  "appName": "Pro Chemist AI",
+  "appId": "com.ccnaturals.ai",
+  "appName": "CC Naturals AI",
   "webDir": "src",
   "server": {
     "androidScheme": "https",
@@ -10,15 +10,6 @@
     "allowMixedContent": false,
     "captureInput": true,
     "webContentsDebuggingEnabled": false,
-    "backgroundColor": "#070d0a",
-    "loggingBehavior": "none"
-  },
-  "plugins": {
-    "SplashScreen": {
-      "launchShowDuration": 1500,
-      "backgroundColor": "#070d0a",
-      "showSpinner": false,
-      "androidScaleType": "CENTER_CROP"
-    }
+    "backgroundColor": "#030d12"
   }
 }

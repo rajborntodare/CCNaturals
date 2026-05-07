@@ -1,11 +1,9 @@
 {
-  "name": "pro-cosmetic-chemist-ai",
-  "version": "1.0.0",
-  "description": "Pro Cosmetic Chemist AI - Agentic Formulation Assistant",
-  "main": "index.js",
+  "name": "cc-naturals-ai",
+  "version": "2.0.0",
+  "description": "CC Naturals AI — Smart Cosmetic R&D and Regulatory Engine",
   "scripts": {
-    "build": "echo 'Static app - no build step'",
-    "cap:sync": "npx cap sync android"
+    "build": "echo 'Static app'"
   },
   "dependencies": {
     "@capacitor/android": "6.0.0",
